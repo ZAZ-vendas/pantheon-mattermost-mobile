@@ -125,6 +125,10 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>UIDesignRequiresCompatibility</key>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>A ZAZ Vendas precisa da sua localização para validar as visitas.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>A ZAZ Vendas precisa do microfone para gravar seus relatórios de áudio.</string>
 	<true/>
 </dict>
 </plist>

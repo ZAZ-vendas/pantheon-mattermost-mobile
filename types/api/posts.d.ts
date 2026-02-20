@@ -120,6 +120,7 @@ type Post = {
     user_activity_posts?: Post[];
     state?: 'DELETED';
     prev_post_id?: string;
+    
 };
 
 type PostProps = {

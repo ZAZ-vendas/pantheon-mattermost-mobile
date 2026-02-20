@@ -54,6 +54,7 @@ type Props = {
     isFromDraftView?: boolean;
     draftReceiverUserName?: string;
     location?: AvailableScreens;
+    zazLocation?: {latitude?: number, longitude?: number};
 }
 
 export const INITIAL_PRIORITY = {
@@ -97,6 +98,7 @@ export default function SendHandler({
     postId,
     postBoRConfig,
     location,
+    zazLocation
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -124,6 +126,7 @@ export default function SendHandler({
         postPriority,
         clearDraft,
         postBoRConfig,
+        zazLocation: zazLocation,
     });
 
     if (isFromDraftView) {

@@ -20,6 +20,10 @@ import SendHandler, {INITIAL_PRIORITY} from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+
+import * as Location from 'expo-location';
+
 type OwnProps = {
     rootId: string;
     draftType?: DraftType;
@@ -111,4 +115,48 @@ const enhanced = withObservables(['channelId', 'rootId', 'draftType'], (ownProps
     };
 });
 
-export default withDatabase(enhanced(SendHandler));
+//export default withDatabase(enhanced(SendHandler));
+
+// No final do seu arquivo index.tsx (onde está o withObservables)
+
+const EnhancedSendHandler = withDatabase(enhanced(SendHandler));
+
+const SendHandlerWithLocation = (props: any) => {
+    // Inicie com um objeto vazio, mas certifique-se de que o estado é atualizado
+    const [locationProps, setLocationProps] = useState<any>({});
+
+useEffect(() => {
+    let subscription: any;
+
+    const startTracking = async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') return;
+
+        // Use o watch para forçar o re-render a cada mudança
+        subscription = await Location.watchPositionAsync(
+            { 
+                accuracy: Location.Accuracy.High, // Mude para High
+                timeInterval: 1000, 
+                distanceInterval: 1 
+            },
+            (loc) => {
+                console.log('Nova loc capturada:', loc.coords.latitude);
+                setLocationProps({
+                    latitude: loc.coords.latitude,
+                    longitude: loc.coords.longitude,
+                });
+            }
+        );
+    };
+
+    startTracking();
+    return () => subscription?.remove();
+}, []);
+
+    return React.createElement(EnhancedSendHandler, {
+        ...props,
+        zazLocation: locationProps,
+    });
+};
+
+export default SendHandlerWithLocation;

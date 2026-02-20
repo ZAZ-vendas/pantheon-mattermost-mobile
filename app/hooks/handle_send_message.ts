@@ -54,6 +54,7 @@ type Props = {
     channelIsReadOnly?: boolean;
     deactivatedChannel?: boolean;
     postBoRConfig?: PostBoRConfig;
+    zazLocation?: {latitude?: number, longitude?: number};
 }
 
 export const useHandleSendMessage = ({
@@ -77,6 +78,7 @@ export const useHandleSendMessage = ({
     deactivatedChannel,
     clearDraft,
     postBoRConfig,
+    zazLocation,
 }: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -130,6 +132,17 @@ export const useHandleSendMessage = ({
         if (postBoRConfig?.enabled) {
             post.type = 'burn_on_read';
         }
+
+        const postProps = {
+            latitude: zazLocation?.latitude,
+            longitude: zazLocation?.longitude,
+            from_zaz_vendas: true,
+        };
+
+        console.log('Dados de localização no Hook:', zazLocation); // Verifique isso no terminal do Metro
+        console.log('Props finais do Post:', postProps);
+
+        post.props = postProps
 
         let response: CreateResponse;
         if (schedulingInfo) {

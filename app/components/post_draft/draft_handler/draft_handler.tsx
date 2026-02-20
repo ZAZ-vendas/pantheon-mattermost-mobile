@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
-import {useIntl} from 'react-intl';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useIntl } from 'react-intl';
 
-import {addFilesToDraft, removeDraft} from '@actions/local/draft';
-import {useServerUrl} from '@context/server';
+import { addFilesToDraft, removeDraft } from '@actions/local/draft';
+import { useServerUrl } from '@context/server';
 import useFileUploadError from '@hooks/file_upload_error';
 import DraftEditPostUploadManager from '@managers/draft_upload_manager';
-import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
+import { fileMaxWarning, fileSizeWarning, uploadDisabledWarning } from '@utils/file';
 
 import SendHandler from '../send_handler';
 
-import type {ErrorHandlers} from '@typings/components/upload_error_handlers';
-import type {AvailableScreens} from '@typings/screens/navigation';
+import type { ErrorHandlers } from '@typings/components/upload_error_handlers';
+import type { AvailableScreens } from '@typings/screens/navigation';
+
+import * as Location from 'expo-location';
 
 type Props = {
     testID?: string;
@@ -58,14 +60,31 @@ export default function DraftHandler(props: Props) {
     const intl = useIntl();
 
     const uploadErrorHandlers = useRef<ErrorHandlers>({});
-    const {uploadError, newUploadError} = useFileUploadError();
+    const { uploadError, newUploadError } = useFileUploadError();
 
     const clearDraft = useCallback(() => {
         removeDraft(serverUrl, channelId, rootId);
         updateValue('');
     }, [serverUrl, channelId, rootId]);
 
+    // Adicione um estado para armazenar a localização
+    const [locationData, setLocationData] = useState<{ lat: number, long: number } | null>(null);
+
+    useEffect(() => {
+        (async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status === 'granted') {
+                const loc = await Location.getCurrentPositionAsync({});
+                setLocationData({
+                    lat: loc.coords.latitude,
+                    long: loc.coords.longitude,
+                });
+            }
+        })();
+    }, []);
+
     const addFiles = useCallback((newFiles: FileInfo[]) => {
+        console.log('Arquivos recebidos no Handler:', newFiles);
         if (!newFiles.length) {
             return;
         }
@@ -120,6 +139,13 @@ export default function DraftHandler(props: Props) {
         }
     }, [files]);
 
+    // Crie um objeto de props para incluir a geolocalização
+    const postProps = {
+        latitude: locationData?.lat,
+        longitude: locationData?.long,
+        zaz_vendas_data: true // Flag para seu controle interno
+    };
+
     return (
         <SendHandler
             testID={testID}
@@ -139,6 +165,8 @@ export default function DraftHandler(props: Props) {
             updateValue={updateValue}
             setIsFocused={setIsFocused}
             location={location}
+            // Injetamos as coordenadas aqui
+            postProps={postProps}
         />
     );
 }

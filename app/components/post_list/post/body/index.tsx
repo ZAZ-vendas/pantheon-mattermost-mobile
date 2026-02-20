@@ -27,6 +27,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type {SearchPattern} from '@typings/global/markdown';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+import ZazWebView from './content/zaz_web_view';
+
 type BodyProps = {
     appsEnabled: boolean;
     hasFiles: boolean;
@@ -227,6 +229,15 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
+                
+                {/* Use o "as any" temporariamente para validar o funcionamento da ZAZ Vendas */}
+                {(post.props as any)?.zaz_web_url && (
+                    <ZazWebView 
+                        url={(post.props as any).zaz_web_url} 
+                        theme={theme}
+                    />
+                )}
+
                 {(acknowledgementsVisible || reactionsVisible) && (
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (
