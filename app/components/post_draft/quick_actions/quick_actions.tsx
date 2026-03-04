@@ -136,9 +136,8 @@ export default function QuickActions({
 
             {/* Componente de Áudio */}
             <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-                <AudioRecorder onUpload={addFiles} />
+                <AudioRecorder value={value} updateValue={updateValue} addFiles={addFiles} />
             </View>
-            {/* ... restante dos ícones */}
         </View>
     );
 }
