@@ -2,19 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import BoRQuickAction from '@components/post_draft/quick_actions/bor_quick_action';
-import { Screens } from '@constants';
+import {Screens} from '@constants';
+
+import AudioRecorder from '../audio/audio_recorder';
 
 import AttachmentAction from './attachment_quick_action';
 import EmojiAction from './emoji_quick_action';
 import InputAction from './input_quick_action';
 import PostPriorityAction from './post_priority_action';
 
-import type { AvailableScreens } from '@typings/screens/navigation';
-
-import AudioRecorder from '../audio/audio_recorder';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -135,8 +135,12 @@ export default function QuickActions({
             }
 
             {/* Componente de Áudio */}
-            <View style={{ width: 44, height: 44, alignItems: 'center', justifyContent: 'center' }}>
-                <AudioRecorder value={value} updateValue={updateValue} addFiles={addFiles} />
+            <View style={{width: 44, height: 44, alignItems: 'center', justifyContent: 'center'}}>
+                <AudioRecorder
+                    value={value}
+                    updateValue={updateValue}
+                    addFiles={addFiles}
+                />
             </View>
         </View>
     );

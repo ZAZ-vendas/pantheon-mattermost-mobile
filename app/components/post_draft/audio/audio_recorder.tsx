@@ -1,6 +1,8 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+import {Audio} from 'expo-av';
 import React, {useState, useRef, useEffect} from 'react';
 import {Alert, TouchableOpacity, ActivityIndicator} from 'react-native';
-import {Audio} from 'expo-av';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
