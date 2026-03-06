@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 import {Audio} from 'expo-av';
-import React, {useState, useRef, useEffect} from 'react';
+import * as FileSystem from 'expo-file-system';
+import React, {useState, useEffect} from 'react';
 import {Alert, TouchableOpacity, ActivityIndicator} from 'react-native';
 import Animated, {
     useSharedValue,
@@ -13,10 +14,11 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
+import {generateId} from '@utils/general';
 import {logError} from '@utils/log';
 
-const WHISPER_URL = 'http://10.100.12.18:4000/v1/audio/transcriptions';
-const WHISPER_HEALTH_URL = 'http://10.100.12.18:4000/health?model=whisper-1';
+const WHISPER_URL = 'https://litellm.zaz.vc/v1/audio/transcriptions';
+const WHISPER_HEALTH_URL = 'https://litellm.zaz.vc/health?model=whisper-1';
 const WHISPER_TOKEN = 'sk-litellm-7kO2JQnSga4zN88TeW7BYhGl';
 const WHISPER_MODEL = 'whisper-1';
 const WHISPER_LANGUAGE = 'pt';
@@ -110,13 +112,37 @@ export default function AudioRecorder({value, updateValue, addFiles}: Props) {
                 return;
             }
 
+            // Anexa o arquivo de áudio ao draft IMEDIATAMENTE,
+            // independente do resultado do STT
+            const fileName = `audio_${Date.now()}.m4a`;
+
+            // Obter tamanho real do arquivo
+            const fileInfoResult = await FileSystem.getInfoAsync(uri);
+            const fileSize = fileInfoResult.exists ? (fileInfoResult.size || 0) : 0;
+
+            const fileInfo: FileInfo = {
+                clientId: generateId(),
+                uri,
+                localPath: uri,
+                name: fileName,
+                extension: 'm4a',
+                mime_type: 'audio/mp4',
+                size: fileSize,
+                has_preview_image: false,
+                height: 0,
+                width: 0,
+                user_id: '',
+            };
+            addFiles([fileInfo]);
+
+            // Tenta transcrever o áudio (bônus — se falhar, o arquivo já está no draft)
             setIsTranscribing(true);
 
             const isHealthy = await checkModelHealth();
             if (!isHealthy) {
                 Alert.alert(
                     'Modelo indisponível',
-                    'O modelo de transcrição está offline. Tente novamente mais tarde.',
+                    'O modelo de transcrição está offline. O áudio foi anexado ao draft.',
                 );
                 return;
             }
@@ -124,12 +150,12 @@ export default function AudioRecorder({value, updateValue, addFiles}: Props) {
             const formData = new FormData();
             formData.append('file', {
                 uri,
-                name: `audio_${Date.now()}.m4a`,
+                name: fileName,
                 type: 'audio/mp4',
             } as any);
             formData.append('model', WHISPER_MODEL);
             formData.append('language', WHISPER_LANGUAGE);
-            formData.append('response_format', 'text');
+            formData.append('response_format', 'json');
 
             const response = await fetch(WHISPER_URL, {
                 method: 'POST',
@@ -150,21 +176,6 @@ export default function AudioRecorder({value, updateValue, addFiles}: Props) {
                 const separator = value.length > 0 && !value.endsWith(' ') ? ' ' : '';
                 updateValue(value + separator + transcribedText);
             }
-
-            const fileName = `audio_${Date.now()}.m4a`;
-            const fileInfo: FileInfo = {
-                uri,
-                localPath: uri,
-                name: fileName,
-                extension: 'm4a',
-                mime_type: 'audio/mp4',
-                size: 0,
-                has_preview_image: false,
-                height: 0,
-                width: 0,
-                user_id: '',
-            };
-            addFiles([fileInfo]);
         } catch (err) {
             logError('[AudioRecorder.stopRecording]', err);
         } finally {

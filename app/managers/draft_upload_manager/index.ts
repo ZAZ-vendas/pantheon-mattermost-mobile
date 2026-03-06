@@ -157,6 +157,11 @@ class DraftEditPostUploadManagerSingleton {
         fileInfo.clientId = h.fileInfo.clientId;
         fileInfo.localPath = h.fileInfo.localPath;
 
+        // Preserve size from the original file if the server returns 0
+        if (!fileInfo.size && h.fileInfo.size) {
+            fileInfo.size = h.fileInfo.size;
+        }
+
         await this.handleUpdateDraftFile(h, fileInfo, h.isEditPost || false);
     };
 
